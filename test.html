@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genetic Risk Propagation Tool</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        .risk-list { margin-top: 20px; text-align: center; display: block; }
+        .risk-category { font-size: 18px; font-weight: bold; margin-top: 20px; }
+        .relative { margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Genetic Risk Propagation Tool</h1>
+    <p>Select your genetic test result:</p>
+    <select id="testResult">
+        <option value="negative">Negative</option>
+        <option value="vus">Variant of Uncertain Significance (VUS)</option>
+        <option value="positive">Positive</option>
+    </select>
+    <button onclick="updateRisk()">Apply Risk</button>
+    
+    <div class="risk-list" id="riskList"></div>
+    
+    <script>
+        function updateRisk() {
+            let testResult = document.getElementById("testResult").value;
+            let riskMapping = {
+                positive: { firstDegree: { relatives: ["Parents", "Siblings", "Children"], risk: "50%" }, 
+                            secondDegree: { relatives: ["Grandparents", "Aunts", "Uncles"], risk: "25%" }, 
+                            thirdDegree: { relatives: ["Cousins", "Great Aunts/Uncles"], risk: "12.5%" } },
+                vus: { firstDegree: { relatives: ["Siblings"], risk: "25%" }, 
+                       secondDegree: { relatives: ["Parents", "Grandparents"], risk: "12.5%" }, 
+                       thirdDegree: { relatives: ["Cousins"], risk: "6%" } },
+                negative: { firstDegree: { relatives: [], risk: "No increased risk" }, 
+                            secondDegree: { relatives: [], risk: "No increased risk" }, 
+                            thirdDegree: { relatives: [], risk: "No increased risk" } }
+            };
+
+            let riskData = riskMapping[testResult];
+            let riskListHTML = "";
+            
+            riskListHTML += `<div class='risk-category'>High Risk (First-Degree Relatives - ${riskData.firstDegree.risk})</div>`;
+            riskData.firstDegree.relatives.forEach(relative => {
+                riskListHTML += `<div class='relative'>• ${relative}</div>`;
+            });
+            
+            riskListHTML += `<div class='risk-category'>Moderate Risk (Second-Degree Relatives - ${riskData.secondDegree.risk})</div>`;
+            riskData.secondDegree.relatives.forEach(relative => {
+                riskListHTML += `<div class='relative'>• ${relative}</div>`;
+            });
+            
+            riskListHTML += `<div class='risk-category'>Low Risk (Third-Degree Relatives - ${riskData.thirdDegree.risk})</div>`;
+            riskData.thirdDegree.relatives.forEach(relative => {
+                riskListHTML += `<div class='relative'>• ${relative}</div>`;
+            });
+            
+            if (!riskData.firstDegree.relatives.length && !riskData.secondDegree.relatives.length && !riskData.thirdDegree.relatives.length) {
+                riskListHTML = "<p>No increased genetic risk detected in relatives.</p>";
+            }
+
+            document.getElementById("riskList").innerHTML = riskListHTML;
+        }
+    </script>
+</body>
+</html>
